@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Logs
+logs/
+*.log
+
+# Env / secrets
+.env
+.env.local
+
+# SDK build artifacts
+sdk/dist/
+sdk/build/
+sdk/*.egg-info/
+
+# Editor / OS
+.DS_Store
+.claude/

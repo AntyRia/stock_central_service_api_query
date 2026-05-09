@@ -1,0 +1,40 @@
+general:
+  timezone: "Asia/Shanghai"
+  root_path: "/app"
+
+database_server:
+  host: "finsight_postgresql_timescale"
+  port: 5432
+  database: "stock_data"
+  user: "user_admin"
+  # SECURITY: password MUST come from env var FIN_POSTGRES_PASSWORD.
+  # app/config.py uses os.getenv("FIN_POSTGRES_PASSWORD", ...) so docker-compose
+  # injects the value at runtime via stock_system/.env.
+  password: ""
+  pool:
+    min_connections: 1
+    max_connections: 4
+    connection_timeout: 5
+    statement_timeout_ms: 8000
+
+redis_server:
+  host: "redis"
+  port: 6379
+  db: 0
+  password: ""
+  decode_responses: true
+  socket_timeout: 5
+  socket_connect_timeout: 5
+  retry_on_timeout: true
+  health_check_interval: 30
+  max_connections: 128
+
+data_api:
+  cache_ttl_seconds: 30
+  cache_refresh_interval_seconds: 20
+  query_workers: 2
+  query_queue_max_size: 128
+  query_wait_timeout_seconds: 8
+  query_job_timeout_seconds: 10
+  default_token_scope: "data_api"
+  queue_reject_status_code: 429
