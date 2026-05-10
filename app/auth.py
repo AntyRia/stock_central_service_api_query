@@ -13,6 +13,17 @@ from typing import Any, Dict, Iterator, List, Optional
 
 from fastapi import Depends, HTTPException, Request
 
+# 向后兼容：从 _auth_helpers re-export 6 个 stateless 辅助函数
+# 这样老代码 `from app.auth import mask_token / validate_token_format / ...` 零改动
+from ._auth_helpers import (  # noqa: F401
+    bool_from_value,
+    client_ip,
+    datetime_from_value,
+    extract_token_from_request,
+    mask_token,
+    validate_token_format,
+)
+
 from .config import Settings
 from .db import Database
 from .schema import normalize_allowed_tables
@@ -54,71 +65,6 @@ class AuthContext:
     device_rebind_remaining: int
     token_meta: Dict[str, Any]
     active_request_id: str = ""
-
-
-def validate_token_format(token: str) -> bool:
-    if not token or not isinstance(token, str):
-        return False
-    if len(token) != 64:
-        return False
-    try:
-        int(token, 16)
-    except Exception:
-        return False
-    return True
-
-
-def extract_token_from_request(request: Request) -> str:
-    auth_header = request.headers.get("Authorization", "") or ""
-    if auth_header.startswith("Bearer "):
-        return auth_header[7:].strip()
-    return str(request.query_params.get("token") or "").strip()
-
-
-def client_ip(request: Request) -> str:
-    forwarded = str(request.headers.get("X-Forwarded-For") or "").strip()
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    real_ip = str(request.headers.get("X-Real-IP") or "").strip()
-    if real_ip:
-        return real_ip
-    if request.client and request.client.host:
-        return str(request.client.host).strip()
-    return ""
-
-
-def mask_token(token: str) -> str:
-    token = str(token or "").strip()
-    if len(token) < 12:
-        return token
-    return f"{token[:6]}...{token[-6:]}"
-
-
-def bool_from_value(value: Any) -> bool:
-    if isinstance(value, bool):
-        return value
-    text = str(value or "").strip().lower()
-    return text in {"1", "true", "yes", "y", "on"}
-
-
-def datetime_from_value(value: Any) -> Optional[datetime]:
-    if value is None or value == "":
-        return None
-    if isinstance(value, datetime):
-        return value
-    if isinstance(value, str):
-        text = value.strip()
-        if not text:
-            return None
-        try:
-            return datetime.fromisoformat(text)
-        except ValueError:
-            if text.endswith("Z"):
-                try:
-                    return datetime.fromisoformat(f"{text[:-1]}+00:00")
-                except ValueError:
-                    return None
-    return None
 
 
 class AuthService:
