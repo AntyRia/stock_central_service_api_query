@@ -15,7 +15,6 @@ from .db import Database
 from .logging_utils import setup_logging
 from .query_queue import QueryQueueManager, QueueSaturatedError
 from .redis_client import build_redis
-from .schema import ensure_schema
 from .snapshot_service import SnapshotService
 
 setup_logging()
@@ -24,7 +23,9 @@ logger = logging.getLogger(__name__)
 settings: Settings = load_settings()
 db = Database(settings)
 redis_client = build_redis(settings)
-ensure_schema(db)
+# ⚠️ schema 由 alembic 管理（v1.3.0）：容器启动时 start.py:_run_alembic_upgrade()
+# 已跑过 alembic upgrade head。此处不再调 ensure_schema(db)。
+# 旧 app/schema.py 标 DEPRECATED，保留观察期后独立 commit 删除。
 auth_service = AuthService(db, redis_client, settings)
 snapshot_service = SnapshotService(db, redis_client, settings)
 queue_manager = QueryQueueManager(snapshot_service, settings)

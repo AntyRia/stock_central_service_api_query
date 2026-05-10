@@ -1,7 +1,22 @@
+"""
+DEPRECATED (since 2026-05-10): schema 已由 alembic 管理。
+
+新流程：schema 变更必须走 alembic：
+  1. docker exec api-data_query alembic revision -m "<描述>"
+  2. 编辑 data_query_service/alembic/versions/<rev>_*.py
+  3. 容器重启时自动 alembic upgrade head（见 start.py:_run_alembic_upgrade）
+
+详见 data_query_service/README-migrations.md。
+
+本文件保留 normalize_allowed_tables 函数（仍被 app/auth.py 引用）；
+SCHEMA_SQL + ensure_schema 已不再被 main.py 调用，保留 ~2 周观察期
+（2026-05-24 前后独立 commit 删除）。
+"""
 from __future__ import annotations
 
 import json
 import logging
+import sys
 
 from .db import Database
 
